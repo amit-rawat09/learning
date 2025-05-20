@@ -1,7 +1,9 @@
 const mongoose = require('mongoose')
+require('dotenv').config()
 
-const mongoURL = 'mongodb://localhost:27017/amitDatabase'
-mongoose.connect(mongoURL)
+// const mongoURL = 'mongodb://localhost:27017/amitDatabase'
+const mongodbURL = process.env.DB_URL
+mongoose.connect(mongodbURL)
 
 const db = mongoose.connection;
 
@@ -17,4 +19,4 @@ db.on('disconnected', () => {
     console.log("connection disconnected");
 })
 
-module.exports = { db };
+module.exports = { db };  

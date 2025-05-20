@@ -1,6 +1,7 @@
 const express = require('express')
 const db = require('./db')
 const app = express()
+require('dotenv').config()
 
 const student = require('./models/newPerson.js')
 
@@ -46,6 +47,8 @@ const Personrouter=require('./router/personRouter.js')
 
 app.use('/person',Personrouter)
 
-app.listen(3000, () => {
+const port=process.env.PORT
+
+app.listen(port, () => {
     console.log("app is running on port", 3000);
 })
