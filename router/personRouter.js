@@ -2,7 +2,6 @@ const express = require("express")
 const router = express.Router();
 const person = require("../models/person.js")
 
-
 router.get('/', async (req, res) => {
     try {
         const data = await person.find();

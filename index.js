@@ -1,54 +1,64 @@
 const express = require('express')
 const db = require('./db')
 const app = express()
-require('dotenv').config()
+const person = require("./models/person.js")
+const student = require("./models/newPerson.js")
 
-const student = require('./models/newPerson.js')
+require('dotenv').config()
 
 const bodyParser = require('body-parser')
 app.use(bodyParser.json())
 
-app.get('/', (req, res) => {
+
+const passport = require('passport')
+const loacalStrategy = require('passport-local').Strategy;
+
+app.use(passport.initialize())
+
+passport.use(new loacalStrategy(async (userget, password, done) => {
+    try {
+
+        const user = await person.findOne({ username: userget })
+
+        if (!user) {
+            return done(null, false, { message: "incorrect user name" })
+        }
+
+
+        const ispasswordmatch =await user.comparePassword(password)
+        console.log(ispasswordmatch);
+
+
+        if (ispasswordmatch) {
+            console.log(" user matched");
+            return done(null, user, { message: "user found" })
+        }
+        else {
+            return done(null, false, { message: "wrong password" })
+        }
+    } catch (error) {
+        return done(error)
+    }
+}))
+
+const logRequest = (req, res, next) => {
+    console.log(`[${new Date().toLocaleDateString()}] Request made to : ${req.orignalUrl}`);
+    next()
+}
+
+app.get('/', passport.authenticate("local", { session: false }), (req, res) => {
     res.send("Hello my name is amit");
 })
 
+//router
+const Personrouter = require('./router/personRouter.js')
+const studentrouter = require('./router/studentrouter.js')
 
-app.post('/student', async (req, res) => {
-    try {
-        const data = req.body;
-        const response = new student(data);
+app.use('/person', Personrouter)
+app.use('/student', studentrouter)
 
-        response.save();
-        console.log("data saved");
-        res.status(200).json(response)
+// const port=process.env.PORT
 
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: "internal server error" })
-    }
-})
-
-app.get("/student/:class", async (req, res) => {
-    try {
-        const className = req.params.class;
-        if (className == "BCA" || "BTECH" || "MCA") {
-            const students = await student.find({ class: className })
-            res.status(200).json({ students })
-        }
-        else {
-            console.log("invalid crediential");
-        }
-    } catch (error) {
-        res.status(400).json(error)
-    }
-})
-
-const Personrouter=require('./router/personRouter.js')
-
-app.use('/person',Personrouter)
-
-const port=process.env.PORT
-
-app.listen(port, () => {
+app.listen(3000, () => {
     console.log("app is running on port", 3000);
 })
